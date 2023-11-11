@@ -3,7 +3,8 @@ import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-
+    id ("kotlinx-serialization")
+    id("app.cash.sqldelight") version "2.0.0"
 }
 
 @OptIn(org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi::class)
@@ -32,6 +33,8 @@ kotlin {
 
     sourceSets {
         val ktorVersion = "2.3.5"
+        val sqlDeLightVersion = "2.0.0"
+
         val commonMain by getting {
             dependencies {
 
@@ -59,6 +62,10 @@ kotlin {
                         strictly("1.7.3")
                     }
                 }
+
+                //SqlDeLight
+                implementation ("app.cash.sqldelight:sqlite-driver:$sqlDeLightVersion")
+
             }
         }
 
@@ -76,14 +83,32 @@ kotlin {
 
                 implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
                 implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+
+                //SqlDeLight
+                implementation ("app.cash.sqldelight:android-driver:$sqlDeLightVersion")
+
             }
         }
 
-        val iosMain by getting {
+        val iosMain by getting  {
+
+            dependsOn(commonMain)
+
             dependencies {
                 implementation("io.ktor:ktor-client-ios:$ktorVersion")
                 implementation("io.ktor:ktor-client-darwin:$ktorVersion")
+
+                implementation ("app.cash.sqldelight:native-driver:$sqlDeLightVersion")
             }
+        }
+
+    }
+}
+
+sqldelight{
+    databases{
+        create("DatabasePokemon"){
+            packageName.set("com.example.pokedex")
         }
     }
 }

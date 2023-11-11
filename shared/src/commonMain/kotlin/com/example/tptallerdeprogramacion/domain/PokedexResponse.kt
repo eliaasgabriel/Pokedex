@@ -10,7 +10,7 @@ data class PokedexResponse(
     @SerialName(value = "next")
     val next: String,
     @SerialName(value = "previous")
-    val previous: String,
+    val previous: String?,
     @SerialName(value = "results")
-    val results: List<Pokemon>
+    var results: List<Pokemon>?
 )

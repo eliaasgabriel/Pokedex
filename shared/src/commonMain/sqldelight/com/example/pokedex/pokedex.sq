@@ -1,0 +1,18 @@
+CREATE TABLE Pokemons(
+    name TEXT PRIMARY KEY,
+    url TEXT NOT NULL
+);
+
+insertPokemon:
+INSERT INTO Pokemons
+(name, url)
+VALUES(?, ?);
+
+obtenerPokemons:
+SELECT
+    *
+FROM
+    Pokemons;
+
+borrarPokemons:
+DELETE FROM Pokemons;
