@@ -25,7 +25,7 @@ class PokedexViewModel(val pokedexRepository : PokedexRepository) : ViewModel() 
 
     private val _screenState: MutableStateFlow<PokedexScreenState> = MutableStateFlow(
         PokedexScreenState.Loading)
-    val screenState: Flow<PokedexScreenState> = _screenState
+    var screenState: Flow<PokedexScreenState> = _screenState
 
     private val coroutineExceptionHandler =
         CoroutineExceptionHandler { coroutineContext, throwable ->
@@ -41,6 +41,7 @@ class PokedexViewModel(val pokedexRepository : PokedexRepository) : ViewModel() 
                     pokedex.postValue(it!!)
                     _screenState.value = PokedexScreenState.ShowPokedex(it.results!!)
 
+                    screenState = _screenState
                     //Se borran los antiguos registros en la base de datos
                     dbRepository.borrarPokemons()
 
@@ -57,25 +58,33 @@ class PokedexViewModel(val pokedexRepository : PokedexRepository) : ViewModel() 
                 for(pokemonData in dbRepository.obtenerPokemons()){
                     pokedexResponse.add(Pokemon(pokemonData.nameData, pokemonData.urlData))
                 }
-                pokedex.value?.results = pokedexResponse
-                Log.d("PokedexViewModel", "Error retrieving pokedex: ${it.message}")
-                _screenState.value = PokedexScreenState.Error
+                if(pokedexResponse.isNotEmpty()){
+                    pokedex.value?.results = pokedexResponse
+                    _screenState.value = PokedexScreenState.ErrorWithPokemons
+
+                    screenState = _screenState
+                }
+                else{
+                    _screenState.value = PokedexScreenState.Error
+                }
+                Log.d("PokedexViewModel", "Error al consultar API: ${it.message}")
             }
 
         }
     }
 
     fun cargarImagenes(pokemons : List<Pokemon>, dbRepository: PokedexDBRepository){
-        viewModelScope.launch(){
+        viewModelScope.launch{
             kotlin.runCatching {
                 pokedexRepository.getImagesPokemon(pokemons)
             }.onSuccess {
                 if (it != null) {
                     pokeUrlImages.value = it
                 } else {
+                    Log.d("PokedexViewModel", "No existen imagenes pokemon")
                 }
             }.onFailure {
-                Log.d("PokedexViewModel", "Error retrieving pokedex: ${it.message}")
+                Log.d("PokedexViewModel", "Error al consultar API: ${it.message}")
                 _screenState.value = PokedexScreenState.Error
             }
         }

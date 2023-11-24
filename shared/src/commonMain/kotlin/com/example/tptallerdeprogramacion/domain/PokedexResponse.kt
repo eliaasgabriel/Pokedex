@@ -12,5 +12,5 @@ data class PokedexResponse(
     @SerialName(value = "previous")
     val previous: String?,
     @SerialName(value = "results")
-    var results: List<Pokemon>?
+    var results: MutableList<Pokemon>?
 )

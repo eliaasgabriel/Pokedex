@@ -8,5 +8,7 @@ sealed class PokedexScreenState {
 
     object Error : PokedexScreenState()
 
-    class ShowPokedex(val pokedex: List<Pokemon>) : PokedexScreenState()
+    object ErrorWithPokemons : PokedexScreenState()
+
+    class ShowPokedex(val pokedex: MutableList<Pokemon>) : PokedexScreenState()
 }
