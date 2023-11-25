@@ -1,6 +1,6 @@
 package com.example.tptallerdeprogramacion.domain.repositories
 
-import com.example.pokedex.DatabasePokemon
+import com.example.pokedex.db.DatabasePokemon
 import com.example.tptallerdeprogramacion.DatabaseDriverFactory
 import com.example.tptallerdeprogramacion.domain.PokedexDBResults
 
@@ -13,19 +13,19 @@ class PokedexDBRepository(dbDriverFactory: DatabaseDriverFactory) {
     private fun mapPokemonSelecting(
         nameDb: String,
         urlDb: String
-    ) : PokedexDBResults{
+    ): PokedexDBResults {
         return PokedexDBResults(nameDb, urlDb)
     }
 
-    fun insertarPokemon(pokemon : PokedexDBResults){
-        pokedexQuery.insertPokemon(pokemon.nameData, pokemon.nameData)
+    fun putPokemon(pokemon: PokedexDBResults) {
+        pokemon.urlData?.let { pokedexQuery.insertPokemon(pokemon.nameData, it) }
     }
 
-    fun obtenerPokemons() : List<PokedexDBResults>{
+    fun getPokemons(): List<PokedexDBResults> {
         return pokedexQuery.obtenerPokemons(::mapPokemonSelecting).executeAsList()
     }
 
-    fun borrarPokemons(){
+    fun deletePokemons() {
         pokedexQuery.transaction {
             pokedexQuery.borrarPokemons()
         }

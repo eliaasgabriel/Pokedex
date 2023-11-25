@@ -7,36 +7,38 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import androidx.lifecycle.ViewModelProvider
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.Button
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Surface
+import androidx.compose.material.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.lifecycle.Observer
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.ViewModelProvider
 import coil.compose.AsyncImage
 import com.example.tptallerdeprogramacion.DatabaseDriverFactory
 import com.example.tptallerdeprogramacion.android.MyApplicationTheme
 import com.example.tptallerdeprogramacion.android.ui.viewModels.PokedexViewModel
 import com.example.tptallerdeprogramacion.android.ui.viewModels.factories.PokedexViewModelFactory
 import com.example.tptallerdeprogramacion.android.ui.viewModels.screenStates.PokedexScreenState
-import com.example.tptallerdeprogramacion.domain.PokedexResponse
+import com.example.tptallerdeprogramacion.domain.ImageBuilder
 import com.example.tptallerdeprogramacion.domain.Pokemon
-import com.example.tptallerdeprogramacion.domain.PokemonImage
 import com.example.tptallerdeprogramacion.domain.repositories.PokedexDBRepository
 import kotlinx.coroutines.launch
 
@@ -51,58 +53,55 @@ class MainActivity : ComponentActivity() {
 
         val pokedexDBRepository = PokedexDBRepository(DatabaseDriverFactory(this))
 
-        setContent{
+        setContent {
             MyApplicationTheme {
 
-                showView(viewModel, this, pokedexDBRepository)
+                ShowView(viewModel, pokedexDBRepository)
             }
         }
     }
 }
 
 @Composable
-fun showView(
+fun ShowView(
     pokedexViewModel: PokedexViewModel,
-    mainActivity: MainActivity,
     pokedexDBRepository: PokedexDBRepository
-){
+) {
     val coroutineScope = rememberCoroutineScope()
     var pokedex by remember { mutableStateOf(mutableListOf<Pokemon>()) }
     var loading by remember { mutableStateOf("") }
 
-    val getView: () -> Unit={
+    val getView: () -> Unit = {
         coroutineScope.launch {
 
-            pokedexViewModel.cargarPokemons(pokedexDBRepository)
-                pokedexViewModel.screenState.collect() {
-                    when (it) {
-                        PokedexScreenState.Loading -> loading = "loading"
-                        PokedexScreenState.Error -> loading = "error"
-                        PokedexScreenState.ErrorWithPokemons -> loading = "success"
-                        is PokedexScreenState.ShowPokedex ->{
-                            pokedex = it.pokedex
-                            loading = "success"
-                        }
+            pokedexViewModel.loadPokemons(pokedexDBRepository)
+            pokedexViewModel.screenState.collect() {
+                when (it) {
+                    PokedexScreenState.Loading -> loading = "loading"
+                    PokedexScreenState.Error -> loading = "error"
+                    is PokedexScreenState.ShowPokedex -> {
+                        pokedex = it.pokedex
+                        loading = "success"
                     }
                 }
+            }
         }
     }
 
-    if(loading == "loading"){
-        showProgressBar()
-    }
-    else if(loading == "error"){
-        showError()
-    }
-    else if(loading == "success"){
+    if (loading == "loading") {
+        ShowProgressBar()
+    } else if (loading == "error") {
+        ShowError(getView)
+    } else if (loading == "success") {
         PokedexRecycler(pokedex)
-    }
-    else{
-        Column(modifier = Modifier
-            .fillMaxSize(),
+
+    } else {
+        Column(
+            modifier = Modifier
+                .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
-        ){
+        ) {
             Button(onClick = getView) {
                 Text("Ver Pokedex")
             }
@@ -113,12 +112,13 @@ fun showView(
 }
 
 @Composable
-fun showProgressBar(){
-    Column(modifier = Modifier
-        .fillMaxSize(),
+fun ShowProgressBar() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
         CircularProgressIndicator(
             modifier = Modifier.width(64.dp),
             color = MaterialTheme.colors.secondary
@@ -127,14 +127,15 @@ fun showProgressBar(){
 }
 
 @Composable
-fun showError(){
-    Column(modifier = Modifier
-        .padding(24.dp)
-        .fillMaxSize()
-        .height(120.dp),
+fun ShowError(getView: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .padding(24.dp)
+            .fillMaxSize()
+            .height(120.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
-    ){
+    ) {
 
         Text(
             text = "Oh no ocurrio un error inesperado :(",
@@ -147,25 +148,30 @@ fun showError(){
             text = "Verifique si tiene conexion a internet y vuelva a intentarlo.",
             color = MaterialTheme.colors.primaryVariant
         )
+
+        Button(onClick = getView) {
+            Text("Ver Pokedex")
+        }
     }
 }
 
 @Composable
-fun PokedexRecycler(pokemons : MutableList<Pokemon>/*, imagesPokemon : List<PokemonImage>*/){
+fun PokedexRecycler(pokemons: MutableList<Pokemon>) {
 
-    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)){
+    LazyColumn(modifier = Modifier.padding(vertical = 4.dp)) {
 
-        items(items = pokemons){
-                pokemon ->
-            /*var pokeImageUrl = ""
-            for(pokeImage in imagesPokemon){
-                if(pokeImage.url == pokemon.url){
-                    pokeImageUrl = pokeImage.image
-                }
+        var count = 0
+        val pokemonsDouble = mutableListOf<Pokemon>()
+
+        items(items = pokemons) { pokemon ->
+            if (count < 2) {
+                pokemonsDouble.add(pokemon)
+                count++
+            } else {
+                ListPokemon(pokemonsDouble)
+                pokemonsDouble.clear()
+                count = 0
             }
-            ListPokemon(pokemon = pokemon, pokeImageUrl)
-*/
-            ListPokemon(pokemon = pokemon)
         }
 
     }
@@ -173,43 +179,47 @@ fun PokedexRecycler(pokemons : MutableList<Pokemon>/*, imagesPokemon : List<Poke
 }
 
 @Composable
-fun ListPokemon(pokemon: Pokemon/*, pokeImage : String*/){
-    Surface(color = MaterialTheme.colors.primary,
-        modifier = Modifier.padding(vertical = 4.dp, horizontal = 8.dp)
-    ) {
-        Column(modifier = Modifier
-            .padding(24.dp)
-            .fillMaxWidth()
-            .height(120.dp)
-        ) {
-            Row {
-                /*Column(
+fun ListPokemon(pokemons: List<Pokemon>) {
+
+    Row {
+        for (pokemon in pokemons) {
+            Column(
+                modifier = Modifier
+                    .width(200.dp)
+                    .height(140.dp)
+            ) {
+                Surface(
+                    color = MaterialTheme.colors.primary,
                     modifier = Modifier
-                        .weight(1f)
+                        .padding(vertical = 4.dp, horizontal = 5.dp)
+                        .fillMaxSize(),
+                    shape = RoundedCornerShape(15)
                 ) {
-                    AsyncImage(
-                        model = pokeImage,
-                        contentDescription = "PokemonImage",
-                        modifier = Modifier.size(90.dp)
-                    )
-                }*/
+                    Column(
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row {
 
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                ) {
-
-                    Text(text = pokemon.name.capitalizeFirstLetter(), style = MaterialTheme.typography.h6.copy(
-                        fontWeight = FontWeight.ExtraBold
-                    ))
+                            AsyncImage(
+                                model = pokemon.url?.let { ImageBuilder.buildPokemonImageByUrl(it) },
+                                contentDescription = "PokemonImage",
+                                modifier = Modifier.size(90.dp)
+                            )
+                        }
+                        Row {
+                            Text(
+                                text = pokemon.name.capitalizeFirstLetter(),
+                                style = MaterialTheme.typography.h6.copy(
+                                    fontWeight = FontWeight.ExtraBold
+                                )
+                            )
+                        }
+                    }
                 }
-
-                OutlinedButton(onClick = { /*TODO*/ }) {
-                    Text(text = "Capturar")
-                }
-
             }
         }
+
     }
 }
 
@@ -225,14 +235,13 @@ fun String.capitalizeFirstLetter(): String {
 @Composable
 fun DefaultPreview() {
     MyApplicationTheme {
-        var pokemons = mutableListOf<Pokemon>()
-        var pokeImages = mutableListOf<PokemonImage>()
-        var pokemon = Pokemon("pikachu", "")
-        for(i in 1..5){
+        val pokemons = mutableListOf<Pokemon>()
+        val pokemon = Pokemon("pikachu", "")
+        for (i in 1..5) {
             pokemons.add(pokemon)
         }
 
-        PokedexRecycler(pokemons/*, pokeImages*/)
+        PokedexRecycler(pokemons)
     }
 
 }

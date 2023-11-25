@@ -1,9 +1,7 @@
-import org.jetbrains.kotlin.kapt3.base.Kapt.kapt
-
 plugins {
     kotlin("multiplatform")
     id("com.android.library")
-    id ("kotlinx-serialization")
+    id("kotlinx-serialization")
     id("app.cash.sqldelight") version "2.0.0"
 }
 
@@ -20,7 +18,7 @@ kotlin {
 
     }
 
-    
+
     listOf(
         iosX64(),
         iosArm64(),
@@ -44,10 +42,10 @@ kotlin {
                 implementation("io.ktor:ktor-serialization-kotlinx-json:$ktorVersion")
 
                 // General
-                implementation ("androidx.core:core-ktx:1.7.0")
-                implementation ("androidx.appcompat:appcompat:1.6.0")
-                implementation ("com.google.android.material:material:1.8.0")
-                implementation ("androidx.constraintlayout:constraintlayout:2.1.4")
+                implementation("androidx.core:core-ktx:1.7.0")
+                implementation("androidx.appcompat:appcompat:1.6.0")
+                implementation("com.google.android.material:material:1.8.0")
+                implementation("androidx.constraintlayout:constraintlayout:2.1.4")
 
                 // Plugin de ktor
                 implementation("io.ktor:ktor-client-logging:$ktorVersion")
@@ -56,7 +54,7 @@ kotlin {
                 implementation("io.github.aakira:napier:2.6.1")
 
                 //Coroutines
-                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3"){
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3") {
                     version {
                         // Necesario para evitar que otras dependencias reemplacen coroutines, por ej: Ktor
                         strictly("1.7.3")
@@ -64,7 +62,7 @@ kotlin {
                 }
 
                 //SqlDeLight
-                implementation ("app.cash.sqldelight:sqlite-driver:$sqlDeLightVersion")
+                implementation("app.cash.sqldelight:sqlite-driver:$sqlDeLightVersion")
 
             }
         }
@@ -75,22 +73,22 @@ kotlin {
             }
         }
 
-        val androidMain by getting{
-            dependencies{
+        val androidMain by getting {
+            dependencies {
                 implementation("io.ktor:ktor-client-okhttp:$ktorVersion")
 
-                implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
+                implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0")
 
-                implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
-                implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+                implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.0")
 
                 //SqlDeLight
-                implementation ("app.cash.sqldelight:android-driver:$sqlDeLightVersion")
+                implementation("app.cash.sqldelight:android-driver:$sqlDeLightVersion")
 
             }
         }
 
-        val iosMain by getting  {
+        val iosMain by getting {
 
             dependsOn(commonMain)
 
@@ -98,17 +96,17 @@ kotlin {
                 implementation("io.ktor:ktor-client-ios:$ktorVersion")
                 implementation("io.ktor:ktor-client-darwin:$ktorVersion")
 
-                implementation ("app.cash.sqldelight:native-driver:$sqlDeLightVersion")
+                implementation("app.cash.sqldelight:native-driver:$sqlDeLightVersion")
             }
         }
 
     }
 }
 
-sqldelight{
-    databases{
-        create("DatabasePokemon"){
-            packageName.set("com.example.pokedex")
+sqldelight {
+    databases {
+        create("DatabasePokemon") {
+            packageName.set("com.example.pokedex.db")
         }
     }
 }

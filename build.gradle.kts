@@ -5,7 +5,7 @@ plugins {
     id("com.squareup.sqldelight").version("1.5.4").apply(false)
     kotlin("android").version("1.8.21").apply(false)
     kotlin("multiplatform").version("1.8.21").apply(false)
-    id ("org.jetbrains.kotlin.plugin.serialization") version ("1.6.21")
+    id("org.jetbrains.kotlin.plugin.serialization") version ("1.6.21")
 }
 
 
